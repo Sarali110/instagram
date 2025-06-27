@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Friendship App</title>
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        input, button {
+            margin: 5px;
+            padding: 8px;
+        }
+
+        #output {
+            white-space: pre-wrap;
+            background: #f3f3f3;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Signup</h2>
+    <input id="signupUser" placeholder="Username">
+    <input id="signupPass" type="password" placeholder="Password">
+    <button onclick="signup()">Signup</button>
+
+    <h2>Login</h2>
+    <input id="loginUser" placeholder="Username">
+    <input id="loginPass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+
+    <h2>Add Friend</h2>
+    <input id="user1" placeholder="Your Username">
+    <input id="user2" placeholder="Friend's Username">
+    <button onclick="addFriend()">Add Friend</button>
+
+    <h2>Remove Friend</h2>
+    <input id="rmUser1" placeholder="Your Username">
+    <input id="rmUser2" placeholder="Friend's Username">
+    <button onclick="removeFriend()">Remove Friend</button>
+
+    <h2>Show Friends</h2>
+    <input id="queryUser" placeholder="Username">
+    <button onclick="getFriends()">Get Friends</button>
+
+    <h3>Output</h3>
+    <div id="output"></div>
+
+    <script>
+        const api = (path, method = "POST", data = {}) => {
+            return fetch(path, {
+                method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+                .then(async res => {
+                    const json = await res.json();
+                    if (!res.ok) throw json;
+                    return json;
+                });
+        };
+
+        function show(msg) {
+            document.getElementById("output").innerText = JSON.stringify(msg, null, 2);
+        }
+
+        function signup() {
+            const username = document.getElementById("signupUser").value;
+            const password = document.getElementById("signupPass").value;
+            api("/signup", "POST", { username, password })
+                .then(show)
+                .catch(show);
+        }
+
+        function login() {
+            const username = document.getElementById("loginUser").value;
+            const password = document.getElementById("loginPass").value;
+            api("/login", "POST", { username, password })
+                .then(show)
+                .catch(show);
+        }
+
+        function addFriend() {
+            const user = document.getElementById("user1").value;
+            const friend = document.getElementById("user2").value;
+            api("/add_friend", "POST", { user, friend })
+                .then(show)
+                .catch(show);
+        }
+
+        function removeFriend() {
+            const user = document.getElementById("rmUser1").value;
+            const friend = document.getElementById("rmUser2").value;
+            api("/remove_friend", "POST", { user, friend })
+                .then(show)
+                .catch(show);
+        }
+
+        function getFriends() {
+            const username = document.getElementById("queryUser").value;
+            fetch("/friends/" + username)
+                .then(async res => {
+                    const json = await res.json();
+                    if (!res.ok) throw json;
+                    return json;
+                })
+                .then(show)
+                .catch(show);
+        }
+    </script>
+
+</body>
+</html>

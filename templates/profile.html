@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Profile</title>
+</head>
+<body>
+    <h2>Welcome, {{ username }}</h2>
+
+    {% if error %}
+    <p style="color:red;">{{ error }}</p>
+    {% endif %}
+
+    <h3>Your Friends</h3>
+    {% if friends %}
+    <ul>
+        {% for friend in friends %}
+        <li>{{ friend }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>You have no friends yet.</p>
+    {% endif %}
+
+    <h3>Add Friend</h3>
+    <form method="POST" action="{{ url_for('add_friend') }}">
+        <input name="friend" placeholder="Friend's Username" required>
+        <button type="submit">Add Friend</button>
+    </form>
+
+    <h3>Remove Friend</h3>
+    <form method="POST" action="{{ url_for('remove_friend') }}">
+        <input name="friend" placeholder="Friend's Username" required>
+        <button type="submit">Remove Friend</button>
+    </form>
+
+    <form method="POST" action="{{ url_for('logout') }}">
+        <button type="submit">Logout</button>
+    </form>
+</body>
+</html>
+
+<h3>Upload a Photo</h3>
+<form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="photo" accept="image/*" required>
+    <input type="text" name="caption" placeholder="Caption (optional)">
+    <button type="submit">Post</button>
+</form>
+
+<h3>Timeline</h3>
+<div id="timeline"></div>
+
+<script>
+    document.getElementById('uploadForm').onsubmit = async function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const res = await fetch('/upload_post', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        alert(data.message || data.error);
+        if (res.ok) {
+            loadTimeline();
+        }
+    };
+
+    async function loadTimeline() {
+        const res = await fetch('/timeline');
+        if (!res.ok) {
+            document.getElementById('timeline').innerText = 'Failed to load timeline';
+            return;
+        }
+        const posts = await res.json();
+        let html = '';
+        posts.forEach(post => {
+            html += `
+                <div style="border:1px solid #ccc; margin:10px; padding:10px;">
+                    <strong>${post.user}</strong><br>
+                    <img src="${post.image_url}" style="max-width:200px;"><br>
+                    <em>${post.caption || ''}</em><br>
+                    <small>${post.timestamp}</small>
+                </div>
+            `;
+        });
+        document.getElementById('timeline').innerHTML = html;
+    }
+
+    window.onload = loadTimeline;
+</script>
